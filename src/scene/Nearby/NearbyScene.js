@@ -6,67 +6,48 @@
  * @flow
  */
 
-//import liraries
-import React, { Component } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ListView, Image } from 'react-native';
-import { Actions } from 'react-native-router-flux';
 
-import ScrollableTabView, { DefaultTabBar } from 'react-native-scrollable-tab-view';
-import SpacingView from '../../widget/SpacingView'
-import RefreshListView, { RefreshState } from '../../widget/RefreshListView'
-import { Heading1, Heading2, Paragraph } from '../../widget/Text'
-import color from '../../widget/color'
-import NavigationItem from '../../widget/NavigationItem'
-import Button from '../../widget/Button'
+import React, {PureComponent} from 'react'
+import {View, Text, StyleSheet, ScrollView, TouchableOpacity, ListView, Image} from 'react-native'
+import ScrollableTabView, {DefaultTabBar} from 'react-native-scrollable-tab-view'
 
-import screen from '../../common/screen'
-import system from '../../common/system'
+import {Heading2, Heading3, Paragraph} from '../../widget/Text'
+import {color, Button, NavigationItem, SpacingView} from '../../widget'
+import {screen, system} from '../../common'
 import api from '../../api'
 import NearbyListScene from './NearbyListScene'
 
-// create a component
-class NearbyScene extends Component {
-    
-    static renderTitle = () => {
-        return (
+type Props = {
+    navigation: any,
+}
+
+
+class NearbyScene extends PureComponent<Props> {
+
+    static navigationOptions = ({navigation}: any) => ({
+        headerRight: (
             <TouchableOpacity style={styles.searchBar}>
-                <Image source={require('../../img/Home/search_icon.png')} style={styles.searchIcon} />
+                <Image source={require('../../img/home/search_icon.png')} style={styles.searchIcon} />
                 <Paragraph>找附近的吃喝玩乐</Paragraph>
             </TouchableOpacity>
-        );
-    }
-
-    static renderLeftButton = () => {
-        return (
-            <NavigationItem
-                icon={require('../../img/Public/icon_food_merchant_address@2x.png')}
-                iconStyle={{width: 13,height:16, marginTop: 1}}
-                title=' 福州 鼓楼'
-                onPress={() => {
-
-                }}
-            />
-        );
-    }
-
-    componentWillMount() {
-        // this.refs.listView.startHeaderRefreshing();
-    }
+        ),
+        headerLeft: (
+            <TouchableOpacity style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center', padding: 10}}>
+                <Image style={{width: 13, height: 16}} source={require('../../img/public/icon_food_merchant_address.png')} />
+                <Text style={{fontSize: 15, color: '#333333'}}> 福州 鼓楼</Text>
+            </TouchableOpacity>
+        ),
+        headerStyle: {backgroundColor: 'white'},
+    })
 
     render() {
         let titles = ['享美食', '住酒店', '爱玩乐', '全部']
         let types = [
             ['热门', '面包甜点', '小吃快餐', '川菜', '日本料理', '韩国料理', '台湾菜', '东北菜'],
-            ['热门', '商务出行', '公寓民宿', '情侣专享', '高星特惠', '成人情趣'],
-            ['热门', 'KTV', '足疗按摩', '洗浴汗蒸', '大宝剑', '电影院', '美发', '美甲'],
+            ['热门', '商务出行', '公寓民宿', '情侣专享', '高星特惠'],
+            ['热门', 'KTV', '足疗按摩', '洗浴汗蒸',  '电影院', '美发', '美甲'],
             []
         ]
-
-        let storyListViews = [];
-        for (let i = 0; i < titles.length; i++) {
-            let storyListView = <NearbyListScene tabLabel={titles[i]} key={i} types={types[i]}/>
-            storyListViews.push(storyListView)
-        }
 
         return (
             <ScrollableTabView
@@ -78,17 +59,24 @@ class NearbyScene extends Component {
                 tabBarUnderlineStyle={styles.tabBarUnderline}
             // renderTabBar={() => <DefaultTabBar style={styles.tabBar}/>}
             >
-                {storyListViews}
+                {titles.map((title, i) => (
+                    <NearbyListScene
+                        tabLabel={titles[i]}
+                        key={i}
+                        types={types[i]}
+                        navigation={this.props.navigation}
+                    />
+                ))}
             </ScrollableTabView>
-        );
+        )
     }
 }
 
-// define your styles
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor:color.background
+        backgroundColor: color.paper
     },
     searchBar: {
         width: screen.width * 0.65,
@@ -99,7 +87,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#eeeeee',
         alignSelf: 'flex-end',
-        marginTop: system.isIOS ? 25 : 13,
         marginRight: 20,
     },
     searchIcon: {
@@ -114,7 +101,7 @@ const styles = StyleSheet.create({
     tabBarUnderline: {
         backgroundColor: '#FE566D'
     },
-});
+})
 
-//make this component available to the app
-export default NearbyScene;
+
+export default NearbyScene

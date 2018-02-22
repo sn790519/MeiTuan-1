@@ -6,49 +6,51 @@
  * @flow
  */
 
-//import liraries
-import React, { Component } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 
-import color from '../../widget/color'
+import React, {PureComponent} from 'react'
+import {View, Text, StyleSheet} from 'react-native'
+import {color} from '../../widget'
+import {screen, system} from '../../common'
 import HomeGridItem from './HomeGridItem'
 
-// create a component
-class HomeGridView extends Component {
+type Props = {
+    infos: Array<Object>,
+    onGridSelected: Function,
+}
+
+
+class HomeGridView extends PureComponent<Props> {
 
     static defaultProps = {
         infos: []
     }
 
     render() {
-        let { infos } = this.props
-        let gridItems = []
-        for (let i = 0; i < infos.length; i++) {
-            let gridItem = (
-                <HomeGridItem info={infos[i]} key={i} onPress={() => this.props.onGridSelected(i)}/>
-            )
-            gridItems.push(gridItem)
-        }
-
         return (
             <View style={styles.container}>
-                {gridItems}
+                {this.props.infos.map((info, index) => (
+                    <HomeGridItem
+                        info={info}
+                        key={index}
+                        onPress={() => this.props.onGridSelected(index)}
+                    />
+                ))}
             </View>
-        );
+        )
     }
 }
 
-// define your styles
+
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-        borderTopWidth: 1,
-        borderLeftWidth: 1,
+        borderTopWidth: screen.onePixel,
+        borderLeftWidth: screen.onePixel,
         borderColor: color.border
     },
-});
+})
 
-//make this component available to the app
-export default HomeGridView;
+
+export default HomeGridView

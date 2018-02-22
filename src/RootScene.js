@@ -6,14 +6,13 @@
  * @flow
  */
 
-//import liraries
-import React, { Component } from 'react';
-import { View, Text, StyleSheet, Platform, StatusBar } from 'react-native';
-import { Router, Scene, Actions, Schema } from 'react-native-router-flux';
+
+import React, {PureComponent} from 'react'
+import {StatusBar} from 'react-native'
+import {StackNavigator, TabNavigator, TabBarBottom} from 'react-navigation'
 
 import color from './widget/color'
-import screen from './common/screen'
-import system from './common/system'
+import {screen, system} from './common'
 import TabBarItem from './widget/TabBarItem'
 
 import HomeScene from './scene/Home/HomeScene'
@@ -24,171 +23,139 @@ import MineScene from './scene/Mine/MineScene'
 import WebScene from './widget/WebScene'
 import GroupPurchaseScene from './scene/GroupPurchase/GroupPurchaseScene'
 
-const animate = props => {
-    const { position, scene } = props;
+const lightContentScenes = ['Home', 'Mine']
 
-    const index = scene.index;
-    const inputRange = [index - 1, index + 1];
-    const outputRange = [screen.width, -screen.width];
-
-    const translateX = position.interpolate({ inputRange, outputRange });
-    return { transform: [{ translateX }] };
+function getCurrentRouteName(navigationState: any) {
+    if (!navigationState) {
+        return null
+    }
+    const route = navigationState.routes[navigationState.index]
+    // dive into nested navigators
+    if (route.routes) {
+        return getCurrentRouteName(route)
+    }
+    return route.routeName
 }
 
 
-// create a component
-class RootScene extends Component {
-    render() {
-        return (
-            <Router
-                ref='router'
-                titleStyle={styles.navigationBarTitle}
-                barButtonIconStyle={styles.navigationBarButtonIcon}
-                navigationBarStyle={styles.navigationBarStyle}
-                getSceneStyle={this.sceneStyle}
-                panHandlers={null}
-                animationStyle={animate}
+class RootScene extends PureComponent<{}> {
+    constructor() {
+        super()
 
-                onSelect={el => {
-                    const { sceneKey, statusBarStyle } = el.props
-                    if (statusBarStyle) {
-                        StatusBar.setBarStyle(statusBarStyle, false)
-                    } else {
-                        StatusBar.setBarStyle('default', false)
-                    }
-                    Actions[sceneKey]()
-                }}
-                onBack={(el) => {
-                    if (el.sceneKey == 'home' && el.children.length == 2) {
-                        StatusBar.setBarStyle('light-content', false)
-                    }
-                    Actions.pop()
-                }}
-            >
-
-                <Scene
-                    initial
-                    key='tabBar'
-                    tabs
-                    tabBarStyle={styles.tabBar}
-                    tabBarSelectedItemStyle={styles.tabBarSelectedItem}
-
-                    tabBarSelectedTitleStyle={styles.tabBarSelectedTitle}
-                    tabBarUnselectedTitleStyle={styles.tabBarUnselectedTitle}
-
-                // tabBarSelectedImageStyle={styles.tabBarSelectedImage}
-                // tabBarUnselectedImageStyle={styles.tabBarUnselectedImage}
-
-                >
-                    <Scene
-                        key='home'
-                        title='团购'
-                        component={HomeScene}
-                        image={require('./img/tabbar/pfb_tabbar_homepage@2x.png')}
-                        selectedImage={require('./img/tabbar/pfb_tabbar_homepage_selected@2x.png')}
-
-                        icon={TabBarItem}
-
-                        navigationBarStyle={{ backgroundColor: color.theme }}
-                        titleStyle={{ color: 'white' }}
-                        statusBarStyle='light-content'
-
-                    />
-                    <Scene
-                        key='merchant'
-                        component={NearbyScene}
-                        title='附近'
-                        image={require('./img/tabbar/pfb_tabbar_merchant@2x.png')}
-                        selectedImage={require('./img/tabbar/pfb_tabbar_merchant_selected@2x.png')}
-
-                        icon={TabBarItem}
-                    />
-                    <Scene
-                        key='order'
-                        component={OrderScene}
-                        title='订单'
-                        image={require('./img/tabbar/pfb_tabbar_order@2x.png')}
-                        selectedImage={require('./img/tabbar/pfb_tabbar_order_selected@2x.png')}
-
-                        icon={TabBarItem}
-                    />
-                    <Scene
-                        key='mine'
-                        component={MineScene}
-                        title='我的'
-                        image={require('./img/tabbar/pfb_tabbar_mine@2x.png')}
-                        selectedImage={require('./img/tabbar/pfb_tabbar_mine_selected@2x.png')}
-
-                        icon={TabBarItem}
-
-                        hideNavBar
-                        statusBarStyle='light-content'
-                    />
-                </Scene>
-
-                <Scene key='web' component={WebScene} title='加载中' hideTabBar clone />
-                <Scene key='groupPurchase' component={GroupPurchaseScene} title='团购详情' hideTabBar clone />
-
-
-            </Router>
-        );
+        StatusBar.setBarStyle('light-content')
     }
 
-
-    sceneStyle = (props: Object, computedProps: Object) => {
-        const style = {
-            flex: 1,
-            backgroundColor: color.theme,
-            // backgroundColor: '#ffffff',
-            shadowColor: null,
-            shadowOffset: null,
-            shadowOpacity: null,
-            shadowRadius: null,
-            marginTop: 0,
-            marginBottom: 0,
-        };
-        if (computedProps.isActive) {
-            style.marginTop = computedProps.hideNavBar ? (system.isIOS ? 20 : 0) : (system.isIOS ? 64 : 54);
-            style.marginBottom = computedProps.hideTabBar ? 0 : 50;
-        }
-        return style;
-    };
-
+    render() {
+        return (
+            <Navigator
+                onNavigationStateChange={
+                    (prevState, currentState) => {
+                        const currentScene = getCurrentRouteName(currentState)
+                        const previousScene = getCurrentRouteName(prevState)
+                        if (previousScene !== currentScene) {
+                            if (lightContentScenes.indexOf(currentScene) >= 0) {
+                                StatusBar.setBarStyle('light-content')
+                            } else {
+                                StatusBar.setBarStyle('dark-content')
+                            }
+                        }
+                    }
+                }
+            />
+        )
+    }
 }
 
-// define your styles
-const styles = StyleSheet.create({
-    tabBar: {
-        backgroundColor: '#ffffff',
-    },
-    tabBarSelectedItem: {
-        backgroundColor: '#ffffff',
-    },
+const Tab = TabNavigator(
+    {
+        Home: {
+            screen: HomeScene,
+            navigationOptions: ({navigation}) => ({
+                tabBarLabel: '团购',
+                tabBarIcon: ({focused, tintColor}) => (
+                    <TabBarItem
+                        tintColor={tintColor}
+                        focused={focused}
+                        normalImage={require('./img/tabbar/tabbar_homepage.png')}
+                        selectedImage={require('./img/tabbar/tabbar_homepage_selected.png')}
+                    />
+                )
+            }),
+        },
+        Nearby: {
+            screen: NearbyScene,
+            navigationOptions: ({navigation}) => ({
+                tabBarLabel: '附近',
+                tabBarIcon: ({focused, tintColor}) => (
+                    <TabBarItem
+                        tintColor={tintColor}
+                        focused={focused}
+                        normalImage={require('./img/tabbar/tabbar_merchant.png')}
+                        selectedImage={require('./img/tabbar/tabbar_merchant_selected.png')}
+                    />
+                )
+            }),
+        },
 
-    tabBarSelectedTitle: {
-        color: color.theme,
-    },
-    tabBarUnselectedTitle: {
-        color: '#979797',
-    },
+        Order: {
+            screen: OrderScene,
+            navigationOptions: ({navigation}) => ({
+                tabBarLabel: '订单',
+                tabBarIcon: ({focused, tintColor}) => (
+                    <TabBarItem
+                        tintColor={tintColor}
+                        focused={focused}
+                        normalImage={require('./img/tabbar/tabbar_order.png')}
+                        selectedImage={require('./img/tabbar/tabbar_order_selected.png')}
+                    />
+                )
+            }),
+        },
 
-    tabBarSelectedImage: {
-        tintColor: color.theme,
+        Mine: {
+            screen: MineScene,
+            navigationOptions: ({navigation}) => ({
+                tabBarLabel: '我的',
+                tabBarIcon: ({focused, tintColor}) => (
+                    <TabBarItem
+                        tintColor={tintColor}
+                        focused={focused}
+                        normalImage={require('./img/tabbar/tabbar_mine.png')}
+                        selectedImage={require('./img/tabbar/tabbar_mine_selected.png')}
+                    />
+                )
+            }),
+        },
     },
-    tabBarUnselectedImage: {
-        tintColor: '#979797'
-    },
+    {
+        tabBarComponent: TabBarBottom,
+        tabBarPosition: 'bottom',
+        lazy: true,
+        animationEnabled: false,
+        swipeEnabled: false,
+        tabBarOptions: {
+            activeTintColor: color.primary,
+            inactiveTintColor: color.gray,
+            style: {backgroundColor: '#ffffff'},
+        },
+    }
 
-    navigationBarStyle: {
-        backgroundColor: 'white'
-    },
-    navigationBarTitle: {
-        color: '#333333'
-    },
-    navigationBarButtonIcon: {
-        tintColor: color.theme
-    },
-});
+)
 
-//make this component available to the app
-export default RootScene;
+const Navigator = StackNavigator(
+    {
+        Tab: {screen: Tab},
+        Web: {screen: WebScene},
+        GroupPurchase: {screen: GroupPurchaseScene},
+    },
+    {
+        navigationOptions: {
+            // headerStyle: { backgroundColor: color.primary }
+            headerBackTitle: null,
+            headerTintColor: '#333333',
+            showIcon: true,
+        },
+    }
+)
+
+export default RootScene

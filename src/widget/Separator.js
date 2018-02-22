@@ -6,29 +6,33 @@
  * @flow
  */
 
-//import liraries
-import React, { Component } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+
+import React, {PureComponent} from 'react'
+import {View, Text, StyleSheet} from 'react-native'
 
 import color from './color'
-import screen from '../common/screen'
-// create a component
-class Separator extends Component {
+import {screen, system} from '../common'
+
+type Props = {
+    style?: any,
+}
+
+class Separator extends PureComponent<Props> {
     render() {
         return (
             <View style={[styles.line, this.props.style]} />
-        );
+        )
     }
 }
 
-// define your styles
+
 const styles = StyleSheet.create({
     line: {
         width: screen.width,
-        height: 1,
+        height: screen.onePixel,
         backgroundColor: color.border,
     },
-});
+})
 
-//make this component available to the app
-export default Separator;
+
+export default Separator

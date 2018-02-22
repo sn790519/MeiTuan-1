@@ -6,29 +6,34 @@
  * @flow
  */
 
-//import liraries
-import React, { Component } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 
-import {Heading2} from '../../widget/Text'
-import screen from '../../common/screen'
+import React, {PureComponent} from 'react'
+import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native'
 
-// create a component
-class HomeMenuItem extends Component {
+import {Heading3} from '../../widget/Text'
+import {screen, system} from '../../common'
+
+type Props = {
+    onPress: Function,
+    icon: any,
+    title: string,
+}
+
+class HomeMenuItem extends PureComponent<Props> {
     render() {
         return (
             <TouchableOpacity style={styles.container}
                 onPress={this.props.onPress}>
                 <Image source={this.props.icon} resizeMode='contain' style={styles.icon} />
-                <Heading2>
+                <Heading3>
                     {this.props.title}
-                </Heading2>
+                </Heading3>
             </TouchableOpacity>
         );
     }
 }
 
-// define your styles
+
 const styles = StyleSheet.create({
     container: {
         justifyContent: 'center',
@@ -43,5 +48,5 @@ const styles = StyleSheet.create({
     }
 });
 
-//make this component available to the app
+
 export default HomeMenuItem;
